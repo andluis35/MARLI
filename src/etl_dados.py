@@ -30,6 +30,7 @@ def limpar_planilha_bi(caminho_arquivo):
     """
         Lê o arquivo Excel exportado do BI e remove sujeiras estruturais.
     """
+    
     print(f"Lendo e processando: {caminho_arquivo.name}...")
 
     try:
