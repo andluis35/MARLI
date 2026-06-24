@@ -1,13 +1,14 @@
+import hashlib
 import pandas as pd
-import unicodedata
-import re
 from pathlib import Path
+import re
+import unicodedata
 
 
 def padronizar_cabecalhos(df):
     """
-        Padroniza os nomes das colunas para facilitar a manipulação
-        EX.: 'Valor Homologação' vira 'valor_homologacao'
+        Padroniza os nomes das colunas para facilitar a manipulação.
+        EX.: 'Valor Homologação' vira 'valor_homologacao'.
     """
 
     novas_colunas = []
@@ -27,7 +28,7 @@ def padronizar_cabecalhos(df):
 
 def limpar_planilha_bi(caminho_arquivo):
     """
-        Lê o arquivo Excel exportado do BI e remove sujeiras estruturais
+        Lê o arquivo Excel exportado do BI e remove sujeiras estruturais.
     """
     print(f"Lendo e processando: {caminho_arquivo.name}...")
 
@@ -54,17 +55,34 @@ def limpar_planilha_bi(caminho_arquivo):
 
 
 def testar_chave_candidata(df, chave_candidata='licitacao'):
-    '''
-        Verifica se a coluna 'licitacao' possui valores únicos não-nulos, caracterizando-a como chave primária
-    '''
+    """
+        Verifica se a coluna 'licitacao' possui valores únicos não-nulos, caracterizando-a como chave primária.
+    """
     
     if chave_candidata in df.columns:
         eh_unique = df[chave_candidata].is_unique
-        print(f"\n[DIAGNÓSTICO] A coluna '{chave_candidata}' é uma chave única perfeita? -> {eh_unique}")
-
-        if not eh_unique:
+        
+        if eh_unique:
+            print(f"[DIAGNÓSTICO] A coluna '{chave_candidata}' é uma chave única perfeita!")
+        else:
             duplicadas = df.duplicated(subset=[chave_candidata]).sum()
-            print(f"[ALERTA] Foram encontradas {duplicadas} linhas com IDs de licitação repetidos.\n")
+            print(f"[DIAGNÓSTICO] A coluna '{chave_candidata}' NÃO É uma chave única perfeita!")
+            print(f"[ALERTA] Foram encontradas {duplicadas} linhas com IDs de licitação repetidos.")
+
+
+def anonimizar_dado(valor):
+    """
+        Aplica o hash SHA-256 unidirecional no documento do fornecedor.
+    """
+
+    if pd.isna(valor):
+        return valor
+    
+    # Remove qualuqer pontuação para garantir que o hash seja idêntico para o mesmo número
+    valor_limpo = re.sub(r'\D', '', str(valor))
+
+    # Retorna a string criptografada
+    return hashlib.sha256(valor_limpo.encode('utf-8')).hexdigest()
 
 
 if __name__ == "__main__":
@@ -72,30 +90,51 @@ if __name__ == "__main__":
     BASE_DIR = Path(__file__).resolve().parent.parent
     RAW_DIR = BASE_DIR / "data" / "raw"
     CLEAN_DIR = BASE_DIR / "data" / "clean"
-    BASE_LICITACOES = RAW_DIR / "raw_base_licitacoes.xlsx"
-    BASE_LICITACOES_HOMOLOGADAS = RAW_DIR / "raw_base_licitacoes_homologadas.xlsx"
-    BASE_PARTICIPANTES = RAW_DIR / "raw_base_participantes.xlsx"
     BASE_EDITAIS = RAW_DIR / "raw_base_editais.xlsx"
+    BASE_HOMOLOGACOES = RAW_DIR / "raw_base_homologacoes.xlsx"
+    BASE_LICITACOES = RAW_DIR / "raw_base_licitacoes.xlsx"
+    BASE_PARTICIPANTES = RAW_DIR / "raw_base_participantes.xlsx"
     
+    print("\n" * 50)
     print("-" * 50)
     print("INICIANDO FASE 1: PIPELINE DE ETL (LIMPEZA)")
     print("-" * 50)
 
     # 1. Carrega e limpa as bases
-    df_licitacoes = limpar_planilha_bi(BASE_LICITACOES)
-    df_licitacoes_homologadas = limpar_planilha_bi(BASE_LICITACOES_HOMOLOGADAS)
-    df_participantes = limpar_planilha_bi(BASE_PARTICIPANTES)
     df_editais = limpar_planilha_bi(BASE_EDITAIS)
+    df_homologacoes = limpar_planilha_bi(BASE_HOMOLOGACOES)
+    df_licitacoes = limpar_planilha_bi(BASE_LICITACOES)
+    df_participantes = limpar_planilha_bi(BASE_PARTICIPANTES)
+    print("\n[OK] Bases carregadas e limpas com sucesso!")
 
     # 2. Verifica se a coluna 'licitacao' possui valores únicos e não-nulos
     testar_chave_candidata(df_licitacoes)
 
-    # 3. Salva as bases limpas
+    # 3. Criptografa o identificador dos fornecedores/participantes das licitações
+    df_participantes['hash_fornecedor'] = df_participantes['cpfcnpj'].apply(anonimizar_dado)
+    df_participantes = df_participantes.drop(columns=['cpfcnpj'])
+    print("[OK] Identificadores anonimizados com SHA-256 com sucesso!")
+
+    # 4. Filtra somente as colunas que serão utilizadas de cada base
+    df_editais = df_editais[['numeroedital', 'url_ultima_publicacao']]
+    df_licitacoes = df_licitacoes[['ano', 'mes', 'unidade_gestora', 'licitacao', 'numero_edital', 'modalidade', 'objeto', 'valor_estimado']]
+    df_homologacoes = df_homologacoes[['licitacao', 'valor_homologacao']]
+    df_participantes = df_participantes.rename(columns={"'fatocotacaoitemparticipantelicitacao'[situacao]": "situacao"})
+    df_participantes = df_participantes[['licitacao', 'hash_fornecedor', 'situacao']]
+    print("[OK] Colunas filtradas com sucesso!")
+
+    # 5. Salva as bases limpas
     df_licitacoes.to_excel(CLEAN_DIR / "clean_base_licitacoes.xlsx", index=False)
-    df_licitacoes_homologadas.to_excel(CLEAN_DIR / "clean_base_licitacoes_homologadas.xlsx", index=False)
+    df_homologacoes.to_excel(CLEAN_DIR / "clean_base_homologacoes.xlsx", index=False)
     df_participantes.to_excel(CLEAN_DIR / "clean_base_participantes.xlsx", index=False)
     df_editais.to_excel(CLEAN_DIR / "clean_base_editais.xlsx", index=False)
+    print("[OK] Bases tratadas e salvas com sucesso!")
 
+    # 6. Resumo do processamento
     print("-" * 50)
-    print("Bases processadas e limpas com sucesso!")
+    print("== RESUMO DAS BASES ==")
+    print(f"Editais: {df_editais.shape}")
+    print(f"Licitações: {df_licitacoes.shape}")
+    print(f"Homologações: {df_homologacoes.shape}")
+    print(f"Participantes: {df_participantes.shape}")
     print("-" * 50)
