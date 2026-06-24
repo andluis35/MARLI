@@ -18,7 +18,7 @@ def padronizar_cabecalhos(df):
         # Remove acentos (EX.: 'Licitação' vira 'Licitacao')
         col_str = unicodedata.normalize('NFKD', col_str).encode('ASCII', 'ignore').decode('utf-8')
 
-        # Deixa tudi minúsculo, remove espaços extras nas pontas e substitui espaos internos por '_' (underscore)
+        # Deixa tudo minúsculo, remove espaços extras nas pontas e substitui espaos internos por '_' (underscore)
         col_str = re.sub(r'\s+', '_', col_str.strip().lower())
         novas_colunas.append(col_str)
 
