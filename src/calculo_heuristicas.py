@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from pathlib import Path
 from time import sleep
@@ -15,7 +16,7 @@ df_participantes = pd.read_excel(BASE_PARTICIPANTES)
 
 def acoplar_competitividade(df_m, df_p):
     """
-        Conta a quantidade de fornecedores únicos que participaram do certame
+        Acopla a contagem de fornecedores únicos que participaram do certame.
     """
 
     # 'df_p.groupby('licitacao')' agrupa os dados de 'df_p' com base na coluna 'licitacao'.
@@ -36,12 +37,31 @@ def acoplar_competitividade(df_m, df_p):
 
 
 def acoplar_desconto(df_m):
-    pass
+    """
+        Acopla o cálculo da diferença percentual entre o valor estimado e o valor homologado do certame.
+    """
+
+    # Garante que as colunas monetárias sejam tratadas como números (float).
+    # errors='coerce' converte valores inválidos para dados nulos em vez de travar a execução.
+    df_m['valor_estimado'] = pd.to_numeric(df_m['valor_estimado'], errors='coerce')
+    df_m['valor_homologacao'] = pd.to_numeric(df_m['valor_homologacao'], errors='coerce')
+
+    # Calcula o percentual, verificando se valor_estimado > 0 para evitar erro de divisão por zero.
+    # Se o valor estimado for zero, negativo ou nulo, o desconto é configurado como 0.
+    # Fórmula: ((Estimado - Homologado) / Estimado) * 100
+    df_m['percentual_desconto'] = np.where(
+        df_m['valor_estimado'] > 0,
+        ((df_m['valor_estimado'] - df_m['valor_homologacao']) / df_m['valor_estimado']) * 100,
+        0
+    )
+
+    print("[2/4] Desconto obtido calculado.")
+
+    return df_m
 
 
 def acoplar_publicidade(df_m):
     pass
-
 
 def acoplar_concentracao_vitorias(df_m, df_p):
     pass
@@ -62,3 +82,4 @@ if __name__ == "__main__":
     print("-" * 50)
 
     df_master = acoplar_competitividade(df_m=df_master, df_p=df_participantes)
+    df_master = acoplar_desconto(df_m=df_master)
