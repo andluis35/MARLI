@@ -46,7 +46,7 @@ def acoplar_desconto(df_m):
     df_m['valor_estimado'] = pd.to_numeric(df_m['valor_estimado'], errors='coerce')
     df_m['valor_homologacao'] = pd.to_numeric(df_m['valor_homologacao'], errors='coerce')
 
-    # Calcula o percentual, verificando se valor_estimado > 0 para evitar erro de divisão por zero.
+    # Calcula e acopla o percentual, verificando se valor_estimado > 0 para evitar erro de divisão por zero.
     # Se o valor estimado for zero, negativo ou nulo, o desconto é configurado como 0.
     # Fórmula: ((Estimado - Homologado) / Estimado) * 100
     df_m['percentual_desconto'] = np.where(
@@ -65,6 +65,9 @@ def acoplar_publicidade(df_m):
         Acopla a verificação feita se o certame foi publicado oficialmente ou não.
     """
 
+    # Verifica se o campo 'url_ultima_publicacao' está vazio. Se sim, o novo campo
+    # 'sem_publicidade' é preenchido com VERDADEIRO; caso contrário, é preenchido
+    # com FALSO.
     df_m['sem_publicidade'] = (
         df_m['url_ultima_publicacao'].isna() |
         (df_m['url_ultima_publicacao'].astype(str).str.strip() == '') |
@@ -77,7 +80,33 @@ def acoplar_publicidade(df_m):
 
 
 def acoplar_concentracao_vitorias(df_m, df_p):
-    pass
+    """
+        Acopla o histórico de domínio das empresas participantes dos certames.
+    """
+
+    # 1. Isola apenas os registros de vitória na base de participantes.
+    vencedores = df_p[df_p['situacao'].str.contains('vencedor', case=False, na=False)]
+
+    # 2. Conta quantas vitórias totais cada empresa (hash_fornecedor) tem na base inteira.
+    vitorias_totais = vencedores.groupby('hash_fornecedor').size().reset_index(name='historico_vitorias_empresa_vencedora')
+
+    # 3. Cruza esse histórico de volta para a tabela de vencedores, acoplando e associando
+    # a nova coluna 'historico_vitorias_empresa_vencedora' a cada fornecedor 'hash_fornecedor'
+    vencedores_com_historico = pd.merge(vencedores, vitorias_totais, on='hash_fornecedor', how='left')
+
+    # 4. Agrupa pela licitação. Se houve múltiplos vencedores (ex.: consórcio ou itens diferentes), pegamos
+    # o "pior caso" (o valor máximo de histórico entre os vencedores) para carimbar o risco.
+    risco_vitorias = vencedores_com_historico.groupby('licitacao')['historico_vitorias_empresa_vencedora'].max().reset_index()
+    risco_vitorias.to_excel(CLEAN_DIR / "teste_vencedores4.xlsx", index=False)
+
+    # 5. Acopla o indicador no 'df_m' utilizando 'licitacao' como chave.
+    # how='left' adiciona a nova coluna de 'historico_vitorias_empresa_vencedora' à direita de 'df_m'
+    df_m = pd.merge(df_m, risco_vitorias, on='licitacao', how='left')
+    df_m['historico_vitorias_empresa_vencedora'] = df_master['historico_vitorias_empresa_vencedora'].fillna(0)
+
+    print("[4/4] Concentração de vitórias rastreada.")
+
+    return df_m
 
 
 def acoplar_risco_modalidade(df_m):
@@ -94,6 +123,7 @@ if __name__ == "__main__":
     print("INICIANDO FASE 3: CÁLCULO DAS HEURÍSTICAS DE RISCO")
     print("-" * 50)
 
-    df_master = acoplar_competitividade(df_m=df_master, df_p=df_participantes)
-    df_master = acoplar_desconto(df_m=df_master)
-    df_master = acoplar_publicidade(df_m=df_master)
+    #df_master = acoplar_competitividade(df_m=df_master, df_p=df_participantes)
+    #df_master = acoplar_desconto(df_m=df_master)
+    #df_master = acoplar_publicidade(df_m=df_master)
+    #df_master = acoplar_concentracao_vitorias(df_m=df_master, df_p=df_participantes)
