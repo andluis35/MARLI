@@ -98,7 +98,6 @@ def acoplar_concentracao_vitorias(df_m, df_p):
     # o "pior caso" (o valor máximo de histórico entre os vencedores) para carimbar o risco.
     # .reset_index() transforma o resultado em um novo DataFrame limpo.
     risco_vitorias = vencedores_com_historico.groupby('licitacao')['historico_vitorias_empresa_vencedora'].max().reset_index()
-    risco_vitorias.to_excel(CLEAN_DIR / "teste_vencedores4.xlsx", index=False)
 
     # 5. Acopla o indicador no 'df_m' utilizando 'licitacao' como chave.
     # how='left' adiciona a nova coluna de 'historico_vitorias_empresa_vencedora' à direita de 'df_m'
