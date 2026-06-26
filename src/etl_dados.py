@@ -2,6 +2,7 @@ import hashlib
 import pandas as pd
 from pathlib import Path
 import re
+from time import sleep
 import unicodedata
 
 
@@ -139,3 +140,4 @@ if __name__ == "__main__":
     print(f"Homologações: {df_homologacoes.shape}")
     print(f"Participantes: {df_participantes.shape}")
     print("-" * 50)
+    sleep(2)
