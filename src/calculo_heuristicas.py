@@ -96,11 +96,13 @@ def acoplar_concentracao_vitorias(df_m, df_p):
 
     # 4. Agrupa pela licitação. Se houve múltiplos vencedores (ex.: consórcio ou itens diferentes), pegamos
     # o "pior caso" (o valor máximo de histórico entre os vencedores) para carimbar o risco.
+    # .reset_index() transforma o resultado em um novo DataFrame limpo.
     risco_vitorias = vencedores_com_historico.groupby('licitacao')['historico_vitorias_empresa_vencedora'].max().reset_index()
     risco_vitorias.to_excel(CLEAN_DIR / "teste_vencedores4.xlsx", index=False)
 
     # 5. Acopla o indicador no 'df_m' utilizando 'licitacao' como chave.
     # how='left' adiciona a nova coluna de 'historico_vitorias_empresa_vencedora' à direita de 'df_m'
+    # .fillna(0) preenche com 0 as licitações que não tiverem um vencedor lançado.
     df_m = pd.merge(df_m, risco_vitorias, on='licitacao', how='left')
     df_m['historico_vitorias_empresa_vencedora'] = df_m['historico_vitorias_empresa_vencedora'].fillna(0)
 
@@ -122,7 +124,7 @@ def acoplar_risco_modalidade(df_m):
     condicao_modalidade = df_m['modalidade'].str.contains('DISPENSA|INEXIGIBILIDADE', na=False, regex=True)
     condicao_objeto = df_m['objeto'].str.contains('DISPENSA|INEXIGIBILIDADE', na=False, regex=True)
 
-    # Cria uma coluna booleana (VERDADEIRO se encontrar em qualquer um dos dois lugares)
+    # Cria uma coluna booleana (VERDADEIRO se encontrar em qualquer um dos dois lugares; FALSO caso contrário)
     df_m['modalidade_de_risco'] = condicao_modalidade | condicao_objeto
 
     print("[5/5] Modalidades de risco identificadas e sinalizadas.")
