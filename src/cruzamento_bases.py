@@ -19,7 +19,7 @@ df_master = df_licitacoes.copy()
 qtd_linhas_originais = df_master.shape[0]
 
 
-def merge_homologacao(df_master):
+def merge_homologacao(df):
     """
         Cruza os dados da base de Licitações com a base de Homologações
     """
@@ -29,17 +29,17 @@ def merge_homologacao(df_master):
     df_homologacoes_agg = df_homologacoes.groupby('licitacao', as_index=False)['valor_homologacao'].sum()
 
     # Efetua o merge das bases em questão, usando a coluna 'licitacao' como chave.
-    # how='left' adiciona as novas colunas de 'df_homologacoes_agg' à direita de 'df_master'.
-    # Se uma licitação do 'df_master' não existir na tabela de homologações, preenche com nulo.
-    df_master = pd.merge(df_master, df_homologacoes_agg, on='licitacao', how='left')
+    # how='left' adiciona as novas colunas de 'df_homologacoes_agg' à direita de 'df'.
+    # Se uma licitação do 'df' não existir na tabela de homologações, preenche com nulo.
+    df = pd.merge(df, df_homologacoes_agg, on='licitacao', how='left')
 
-    # O teste booleano 'df_master.shape[0] == qtd_linhas_originais' verifica se não houve duplicações indevidas.
-    print(f"[MERGE 1] Homologação acoplada. Linhas mantidas: {df_master.shape[0] == qtd_linhas_originais}")
+    # O teste booleano 'df.shape[0] == qtd_linhas_originais' verifica se não houve duplicações indevidas.
+    print(f"[MERGE 1] Homologação acoplada. Linhas mantidas: {df.shape[0] == qtd_linhas_originais}")
 
-    return df_master
+    return df
 
 
-def merge_editais(df_master):
+def merge_editais(df):
     """
         Cruza os dados da base de Licitações com a base de Editais
     """
@@ -48,11 +48,11 @@ def merge_editais(df_master):
     df_editais_unique = df_editais.drop_duplicates(subset=['numeroedital'])
 
     # Efetua o merge das bases em questão.
-    # left_on='numero_edital' indica que 'numero_edital' do 'df_master' será a chave de ligação.
+    # left_on='numero_edital' indica que 'numero_edital' do 'df' será a chave de ligação.
     # right_on='numeroedital' indica que a coluna correspondente do 'df_editais_unique' se chama 'numeroedital'.
-    # how='left' adiciona as novas colunas de 'df_editais_unique' à direita de 'df_master'.
-    df_master = pd.merge(
-        df_master,
+    # how='left' adiciona as novas colunas de 'df_editais_unique' à direita de 'df'.
+    df = pd.merge(
+        df,
         df_editais_unique,
         left_on='numero_edital',
         right_on='numeroedital',
@@ -60,16 +60,16 @@ def merge_editais(df_master):
     )
 
     # Remove a coluna duplicada do número do edital gerada pelo cruzamento
-    if 'numeroedital' in df_master.columns:
-        df_master = df_master.drop(columns=['numeroedital'])
+    if 'numeroedital' in df.columns:
+        df = df.drop(columns=['numeroedital'])
 
-    # O teste booleano 'df_master.shape[0] == qtd_linhas_originais' verifica se não houve duplicações indevidas.
-    print(f"[MERGE 2] Editais acoplados. Linhas mantidas: {df_master.shape[0] == qtd_linhas_originais}")
+    # O teste booleano 'df.shape[0] == qtd_linhas_originais' verifica se não houve duplicações indevidas.
+    print(f"[MERGE 2] Editais acoplados. Linhas mantidas: {df.shape[0] == qtd_linhas_originais}")
 
-    return df_master
+    return df
 
 
-def merge_participantes(df_master):
+def merge_participantes(df):
     """
         Cruza os dados da base de Licitações com a base de Participantes
     """
@@ -80,7 +80,7 @@ def merge_participantes(df_master):
     # O merge não será feito para não multiplicar o número de linhas do 'df_master'.
     print(f"[STATUS] Base de Participantes reservada na memória para os cálculos heurísticos.")
 
-    return df_master
+    return df
 
 
 if __name__ == "__main__":
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     df_master = merge_homologacao(df_master)
     df_master = merge_editais(df_master)
     df_master = merge_participantes(df_master)
-    df_master.to_excel(CLEAN_DIR / "clean_base_master.xlsx", index=False)
+    df_master.to_excel(CLEAN_DIR / "clean_base_master2.xlsx", index=False)
     print("[OK] Bases acopladas e salvas com sucesso!")
 
     print("-" * 50)
