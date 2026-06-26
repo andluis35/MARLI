@@ -61,7 +61,20 @@ def acoplar_desconto(df_m):
 
 
 def acoplar_publicidade(df_m):
-    pass
+    """
+        Acopla a verificação feita se o certame foi publicado oficialmente ou não.
+    """
+
+    df_m['sem_publicidade'] = (
+        df_m['url_ultima_publicacao'].isna() |
+        (df_m['url_ultima_publicacao'].astype(str).str.strip() == '') |
+        (df_m['url_ultima_publicacao'].astype(str).str.lower() == 'nan')
+    )
+
+    print("[3/4] Rastreio de publicidade finalizado.")
+
+    return df_m
+
 
 def acoplar_concentracao_vitorias(df_m, df_p):
     pass
@@ -83,3 +96,4 @@ if __name__ == "__main__":
 
     df_master = acoplar_competitividade(df_m=df_master, df_p=df_participantes)
     df_master = acoplar_desconto(df_m=df_master)
+    df_master = acoplar_publicidade(df_m=df_master)
