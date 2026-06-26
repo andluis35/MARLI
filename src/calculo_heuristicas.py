@@ -31,7 +31,7 @@ def acoplar_competitividade(df_m, df_p):
     # Preenche com '0' as licitações que não obtiverem informações sobre participantes
     df_m['qtd_participantes'] = df_m['qtd_participantes'].fillna(0)
 
-    print("[1/4] Competitividade calculada.")
+    print("[1/5] Competitividade calculada.")
 
     return df_m
 
@@ -55,7 +55,7 @@ def acoplar_desconto(df_m):
         0
     )
 
-    print("[2/4] Desconto obtido calculado.")
+    print("[2/5] Desconto obtido calculado.")
 
     return df_m
 
@@ -74,7 +74,7 @@ def acoplar_publicidade(df_m):
         (df_m['url_ultima_publicacao'].astype(str).str.lower() == 'nan')
     )
 
-    print("[3/4] Rastreio de publicidade finalizado.")
+    print("[3/5] Rastreio de publicidade finalizado.")
 
     return df_m
 
@@ -102,19 +102,32 @@ def acoplar_concentracao_vitorias(df_m, df_p):
     # 5. Acopla o indicador no 'df_m' utilizando 'licitacao' como chave.
     # how='left' adiciona a nova coluna de 'historico_vitorias_empresa_vencedora' à direita de 'df_m'
     df_m = pd.merge(df_m, risco_vitorias, on='licitacao', how='left')
-    df_m['historico_vitorias_empresa_vencedora'] = df_master['historico_vitorias_empresa_vencedora'].fillna(0)
+    df_m['historico_vitorias_empresa_vencedora'] = df_m['historico_vitorias_empresa_vencedora'].fillna(0)
 
-    print("[4/4] Concentração de vitórias rastreada.")
+    print("[4/5] Concentração de vitórias rastreada.")
 
     return df_m
 
 
 def acoplar_risco_modalidade(df_m):
-    pass
+    """
+        Acopla a verificação de risco da modalidade do certame.
+    """
 
+    # Converte as colunas para string e maiúsculo para evitar falhas por case sensitivity
+    df_m['modalidade'] = df_m['modalidade'].astype(str).str.upper()
+    df_m['objeto'] = df_m['objeto'].astype(str).str.upper()
 
-def calcular_score_risco(df_m):
-    pass
+    # Verifica se as palavras-chave existem em qualquer uma das duas colunas
+    condicao_modalidade = df_m['modalidade'].str.contains('DISPENSA|INEXIGIBILIDADE', na=False, regex=True)
+    condicao_objeto = df_m['objeto'].str.contains('DISPENSA|INEXIGIBILIDADE', na=False, regex=True)
+
+    # Cria uma coluna booleana (VERDADEIRO se encontrar em qualquer um dos dois lugares)
+    df_m['modalidade_de_risco'] = condicao_modalidade | condicao_objeto
+
+    print("[5/5] Modalidades de risco identificadas e sinalizadas.")
+
+    return df_m
 
 
 if __name__ == "__main__":
@@ -123,7 +136,15 @@ if __name__ == "__main__":
     print("INICIANDO FASE 3: CÁLCULO DAS HEURÍSTICAS DE RISCO")
     print("-" * 50)
 
-    #df_master = acoplar_competitividade(df_m=df_master, df_p=df_participantes)
-    #df_master = acoplar_desconto(df_m=df_master)
-    #df_master = acoplar_publicidade(df_m=df_master)
-    #df_master = acoplar_concentracao_vitorias(df_m=df_master, df_p=df_participantes)
+    df_master = acoplar_competitividade(df_m=df_master, df_p=df_participantes)
+    df_master = acoplar_desconto(df_m=df_master)
+    df_master = acoplar_publicidade(df_m=df_master)
+    df_master = acoplar_concentracao_vitorias(df_m=df_master, df_p=df_participantes)
+    df_master = acoplar_risco_modalidade(df_m=df_master)
+    df_master.to_excel(CLEAN_DIR / "clean_base_master.xlsx", index=False)
+
+    print("-" * 50)
+    print("== AMOSTRA DAS MÉTRICAS CALCULADAS ==\n")
+    print(df_master[['licitacao', 'qtd_participantes', 'percentual_desconto', 'sem_publicidade', 'historico_vitorias_empresa_vencedora', 'modalidade_de_risco']].head())
+    print("-" * 50)
+    sleep(2)

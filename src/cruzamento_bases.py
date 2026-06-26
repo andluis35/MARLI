@@ -92,7 +92,7 @@ if __name__ == "__main__":
     df_master = merge_homologacao(df_master)
     df_master = merge_editais(df_master)
     df_master = merge_participantes(df_master)
-    df_master.to_excel(CLEAN_DIR / "clean_base_master2.xlsx", index=False)
+    df_master.to_excel(CLEAN_DIR / "clean_base_master.xlsx", index=False)
     print("[OK] Bases acopladas e salvas com sucesso!")
 
     print("-" * 50)
