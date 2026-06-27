@@ -36,8 +36,8 @@ def criar_categoria_de_risco(df_m):
     """
 
     condicoes = [
-        df_m['score_de_risco'] <= 1,
-        df_m['score_de_risco'].isin([2, 3]),
+        df_m['score_de_risco'] <= 2,
+        df_m['score_de_risco'] == 3,
         df_m['score_de_risco'] >= 4
     ]
     classes = ['Baixo Risco', 'Médio Risco', 'Alto Risco']
