@@ -1,3 +1,4 @@
+from calculo_heuristicas import executar_heuristicas
 from cruzamento_bases import executar_cruzamento
 from etl_dados import executar_etl
 from pathlib import Path
@@ -22,4 +23,8 @@ if __name__ == "__main__":
 
     # FASE 2: Cruzamento dos Dados
     df_master = executar_cruzamento(df_editais, df_homologacoes, df_licitacoes, df_participantes)
+
+    # FASE 3: Cálculo das Heurísticas
+    df_master = executar_heuristicas(df_master, df_participantes)
+    df_master.to_excel(BASE_DIR / "teste_master2.xlsx", index=False)
     
