@@ -6,9 +6,9 @@ from time import sleep
 
 # Definição de caminhos absolutos DataFrame Master
 BASE_DIR = Path(__file__).resolve().parent.parent
+OUTPUT_DIR = BASE_DIR / "data" / "base_tratada.xlsx"
 CLEAN_DIR = BASE_DIR / "data" / "clean"
 BASE_MASTER = CLEAN_DIR / "clean_base_master.xlsx"
-BASE_PARTICIPANTES = CLEAN_DIR / "clean_base_participantes.xlsx"
 df_master = pd.read_excel(BASE_MASTER)
 
 # Definição de constantes que representam os limiares das regras heurísticas
@@ -63,4 +63,8 @@ if __name__ == "__main__":
 
     df_master = calcular_score_de_risco(df_m=df_master)
     df_master = criar_categoria_de_risco(df_m=df_master)
-    df_master.to_excel(CLEAN_DIR / "clean_base_master.xlsx", index=False)
+    df_master.to_excel(OUTPUT_DIR, index=False)
+
+    print("-" * 50)
+    print(f"== [SUCESSO] Base final exportada para: {OUTPUT_DIR} ==")
+    print("-" * 50)
