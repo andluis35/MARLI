@@ -26,5 +26,4 @@ if __name__ == "__main__":
 
     # FASE 3: Cálculo das Heurísticas
     df_master = executar_heuristicas(df_master, df_participantes)
-    df_master.to_excel(BASE_DIR / "teste_master2.xlsx", index=False)
     
