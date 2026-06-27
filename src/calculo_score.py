@@ -4,14 +4,7 @@ from pathlib import Path
 from time import sleep
 
 
-# Definição de caminhos absolutos DataFrame Master
-BASE_DIR = Path(__file__).resolve().parent.parent
-OUTPUT_DIR = BASE_DIR / "data" / "base_tratada.xlsx"
-CLEAN_DIR = BASE_DIR / "data" / "clean"
-BASE_MASTER = CLEAN_DIR / "clean_base_master.xlsx"
-df_master = pd.read_excel(BASE_MASTER)
-
-# Definição de constantes que representam os limiares das regras heurísticas
+# Definição de constantes que representam os limiares das regras heurísticas.
 QTD_MINIMA_PARTICIPANTES = 3
 PERCENTUAL_DESCONTO_MINIMO = 5.0
 LIMIAR_VITORIAS = 10
@@ -55,7 +48,12 @@ def criar_categoria_de_risco(df_m):
 
     return df_m
 
-if __name__ == "__main__":
+
+def executar_score(df_master):
+    """
+        Calcula e acopla os scores e suas respectivas categorias às licitações.
+    """
+    
     print("\n" * 50)
     print("-" * 50)
     print("INICIANDO FASE 4: CÁLCULO DO SCORE DE RISCO")
@@ -63,17 +61,14 @@ if __name__ == "__main__":
 
     df_master = calcular_score_de_risco(df_m=df_master)
     df_master = criar_categoria_de_risco(df_m=df_master)
-    df_master.to_excel(OUTPUT_DIR, index=False)
 
-    # Exibe o grau de desbalanceamento da base
+    # Exibe o grau de desbalanceamento da base.
     print("-" * 50)
     print("== DISTRIBUIÇÃO DAS CLASSES DE RISCO NA BASE ==")
     print(df_master['risco'].value_counts(normalize=True) * 100)
     print("\n== CONTAGEM ABSOLUTA ==")
     print(df_master['risco'].value_counts())
     print("-" * 50)
-    
-    print("-" * 50)
-    print(f"[SUCESSO] Base final exportada para: {OUTPUT_DIR}")
-    print("-" * 50)
     sleep(2)
+
+    return df_master
