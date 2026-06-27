@@ -9,7 +9,7 @@ from time import sleep
 # Definição de caminhos absolutos no nível de orquestração.
 BASE_DIR = Path(__file__).resolve().parent.parent
 RAW_DIR = BASE_DIR / "data" / "raw"
-OUTPUT_DIR = BASE_DIR / "data" / "base_tratada.xlsx"
+OUTPUT_DIR = BASE_DIR / "data" / "processed" / "base_tratada.xlsx"
 
 
 if __name__ == "__main__":
@@ -37,4 +37,3 @@ if __name__ == "__main__":
     print("-" * 50)
     print(f"[SUCESSO] Pipeline finalizado! Base exportada para: {OUTPUT_DIR}")
     print("-" * 50)
-    
