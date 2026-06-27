@@ -51,7 +51,7 @@ def criar_categoria_de_risco(df_m):
 
     df_m['risco'] = np.select(condicoes, classes, default='Indefinido')
     
-    print("[OK] Rótulos de classe (Baixo, Nédio, Alto) atribuídos com sucesso.")
+    print("[OK] Rótulos de classe (Baixo, Médio, Alto) atribuídos com sucesso.")
 
     return df_m
 
@@ -65,6 +65,15 @@ if __name__ == "__main__":
     df_master = criar_categoria_de_risco(df_m=df_master)
     df_master.to_excel(OUTPUT_DIR, index=False)
 
+    # Exibe o grau de desbalanceamento da base
     print("-" * 50)
-    print(f"== [SUCESSO] Base final exportada para: {OUTPUT_DIR} ==")
+    print("== DISTRIBUIÇÃO DAS CLASSES DE RISCO NA BASE ==")
+    print(df_master['risco'].value_counts(normalize=True) * 100)
+    print("\n== CONTAGEM ABSOLUTA ==")
+    print(df_master['risco'].value_counts())
     print("-" * 50)
+    
+    print("-" * 50)
+    print(f"[SUCESSO] Base final exportada para: {OUTPUT_DIR}")
+    print("-" * 50)
+    sleep(2)
