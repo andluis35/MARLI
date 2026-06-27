@@ -87,15 +87,16 @@ def anonimizar_dado(valor):
     return hashlib.sha256(valor_limpo.encode('utf-8')).hexdigest()
 
 
-if __name__ == "__main__":
+def executar_etl(caminhos_raw):
+    """
+        Realiza o ETL completo das bases brutas.
+    """
+
     # Configuração de diretórios absolutos
-    BASE_DIR = Path(__file__).resolve().parent.parent
-    RAW_DIR = BASE_DIR / "data" / "raw"
-    CLEAN_DIR = BASE_DIR / "data" / "clean"
-    BASE_EDITAIS = RAW_DIR / "raw_base_editais.xlsx"
-    BASE_HOMOLOGACOES = RAW_DIR / "raw_base_homologacoes.xlsx"
-    BASE_LICITACOES = RAW_DIR / "raw_base_licitacoes.xlsx"
-    BASE_PARTICIPANTES = RAW_DIR / "raw_base_participantes.xlsx"
+    BASE_EDITAIS = caminhos_raw / "raw_base_editais.xlsx"
+    BASE_HOMOLOGACOES = caminhos_raw / "raw_base_homologacoes.xlsx"
+    BASE_LICITACOES = caminhos_raw / "raw_base_licitacoes.xlsx"
+    BASE_PARTICIPANTES = caminhos_raw / "raw_base_participantes.xlsx"
     
     print("\n" * 50)
     print("-" * 50)
@@ -119,25 +120,20 @@ if __name__ == "__main__":
 
     # 4. Filtra somente as colunas que serão utilizadas de cada base
     df_editais = df_editais[['numeroedital', 'url_ultima_publicacao']]
-    df_licitacoes = df_licitacoes[['ano', 'mes', 'unidade_gestora', 'licitacao', 'numero_edital', 'modalidade', 'objeto', 'valor_estimado']]
     df_homologacoes = df_homologacoes[['licitacao', 'valor_homologacao']]
+    df_licitacoes = df_licitacoes[['ano', 'mes', 'unidade_gestora', 'licitacao', 'numero_edital', 'modalidade', 'objeto', 'valor_estimado']]
     df_participantes = df_participantes.rename(columns={"'fatocotacaoitemparticipantelicitacao'[situacao]": "situacao"})
     df_participantes = df_participantes[['licitacao', 'hash_fornecedor', 'situacao']]
     print("[OK] Colunas filtradas com sucesso!")
 
-    # 5. Salva as bases limpas
-    df_licitacoes.to_excel(CLEAN_DIR / "clean_base_licitacoes.xlsx", index=False)
-    df_homologacoes.to_excel(CLEAN_DIR / "clean_base_homologacoes.xlsx", index=False)
-    df_participantes.to_excel(CLEAN_DIR / "clean_base_participantes.xlsx", index=False)
-    df_editais.to_excel(CLEAN_DIR / "clean_base_editais.xlsx", index=False)
-    print("[OK] Bases tratadas e salvas com sucesso!")
-
-    # 6. Resumo do processamento
+    # 5. Resumo do processamento
     print("-" * 50)
     print("== RESUMO DAS BASES ==")
     print(f"Editais: {df_editais.shape}")
-    print(f"Licitações: {df_licitacoes.shape}")
     print(f"Homologações: {df_homologacoes.shape}")
+    print(f"Licitações: {df_licitacoes.shape}")
     print(f"Participantes: {df_participantes.shape}")
     print("-" * 50)
     sleep(2)
+
+    return df_editais, df_homologacoes, df_licitacoes, df_participantes
