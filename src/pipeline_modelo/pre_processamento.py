@@ -153,20 +153,20 @@ def vetorizar_texto(X_train, X_test, coluna='objeto', max_features=50):
 
     tf_idf = TfidfVectorizer(max_features=max_features, stop_words=stop_words_pt)
 
-    # Treina e transforma no conjunto de treino
+    # Treina e transforma no conjunto de treino.
     matriz_train = tf_idf.fit_transform(X_train[coluna])
 
-    # Apenas transforma no conjunto de teste
+    # Apenas transforma no conjunto de teste.
     matriz_test = tf_idf.transform(X_test[coluna])
 
-    # Cria os nomes das novas colunas (ex.: 'tfidf_asfalto'; 'tfidf_medicamento')
+    # Cria os nomes das novas colunas (ex.: 'tfidf_asfalto'; 'tfidf_medicamento').
     nomes_colunas = [f"tfidf_{palavra}" for palavra in tf_idf.get_feature_names_out()]
 
     # Converte as matrizes geradas de volta para DataFrames do Pandas
     df_tfidf_train = pd.DataFrame(matriz_train.toarray(), columns=nomes_colunas, index=X_train.index)
     df_tfidf_test = pd.DataFrame(matriz_test.toarray(), columns=nomes_colunas, index=X_test.index)
 
-    # Junta as novas colunas com os dados originais e apaga a coluna de texto bruta
+    # Junta as novas colunas com os dados originais e apaga a coluna de texto bruta.
     X_train_final = pd.concat([X_train.drop(columns=[coluna]), df_tfidf_train], axis=1)
     X_test_final = pd.concat([X_test.drop(columns=[coluna]), df_tfidf_test], axis=1)
 
@@ -184,11 +184,34 @@ def aplicar_smote(X_train, y_train):
     print("Aplicando SMOTE...")
     print("-" * 50)
 
+    # Conta a distribuição original dos dados (antes do SMOTE).
+    antes = y_train.value_counts().sort_index()
+
     smote = SMOTE(random_state=42)
+    X_train_smote, y_train_smote = smote.fit_resample(X_train, y_train)
+
+    # Conta a dsitribuição sintética dos dados (depois do SMOTE).
+    depois = y_train_smote.value_counts().sort_index()
+
+    # Mapeamento reverso para exibição textual (Baixo = 0, Médio = 1, Alto = 2).
+    mapa_risco = {0: 'Baixo Risco', 1: 'Médio Risco', 2: 'Alto Risco'}
+
+    # Cria um DataFramme Pandas para visualização.
+    tabela = pd.DataFrame({
+        'Classe de Risco': [mapa_risco[i] for i in antes.index],
+        'Quantidade de Licitações (Antes do SMOTE)': antes.values,
+        'Quantidade de Licitações (Após o SMOTE)': depois.values
+    }).set_index('Classe de Risco')
+
+    # Adiciona a linha de soma total na base da tabela
+    tabela.loc['Total (Treino)'] = tabela.sum()
+
+    print("== TABELA DE COMPARAÇÃO (PRÉ/PÓS SMOTE) ==")
+    print(tabela)
 
     print(f"[OK] SMOTE aplicado com sucesso!")
 
-    return smote.fit_resample(X_train, y_train)
+    return X_train_smote, y_train_smote
 
 
 def executar_pipeline(caminho_base_tratada):
