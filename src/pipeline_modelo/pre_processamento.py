@@ -190,7 +190,7 @@ def aplicar_smote(X_train, y_train):
     smote = SMOTE(random_state=42)
     X_train_smote, y_train_smote = smote.fit_resample(X_train, y_train)
 
-    # Conta a dsitribuição sintética dos dados (depois do SMOTE).
+    # Conta a dsitribuição sintética dos dados (após o SMOTE).
     depois = y_train_smote.value_counts().sort_index()
 
     # Mapeamento reverso para exibição textual (Baixo = 0, Médio = 1, Alto = 2).
