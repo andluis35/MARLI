@@ -12,7 +12,11 @@ RAW_DIR = BASE_DIR / "data" / "raw"
 OUTPUT_DIR = BASE_DIR / "data" / "processed"
 
 
-if __name__ == "__main__":
+def main():
+    """
+        Gera a base completa e tratada a partir dos dados brutos do TCE-RJ.
+    """
+    
     print("\n" * 50)
     print("=" * 50)
     print("Iniciando o Pipeline da MARLI...")
@@ -38,3 +42,7 @@ if __name__ == "__main__":
     print("-" * 50)
     print(f"[SUCESSO] Pipeline finalizado! Base exportada para: {OUTPUT_DIR}")
     print("-" * 50)
+
+
+if __name__ == "__main__":
+    main()
