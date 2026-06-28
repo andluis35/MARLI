@@ -7,9 +7,9 @@ from time import sleep
 
 
 # Definição de caminhos absolutos no nível de orquestração.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 RAW_DIR = BASE_DIR / "data" / "raw"
-OUTPUT_DIR = BASE_DIR / "data" / "processed" / "base_tratada.xlsx"
+OUTPUT_DIR = BASE_DIR / "data" / "processed"
 
 
 if __name__ == "__main__":
@@ -32,7 +32,8 @@ if __name__ == "__main__":
     df_master = executar_score(df_master)
 
     # SAÍDA: Base devidamente limpa, tratada e rotulada.
-    df_master.to_excel(OUTPUT_DIR, index=False)
+    df_master.to_excel(OUTPUT_DIR / "base_tratada.xlsx", index=False)
+    df_master.to_parquet(OUTPUT_DIR / "base_tratada.parquet", index=False)
 
     print("-" * 50)
     print(f"[SUCESSO] Pipeline finalizado! Base exportada para: {OUTPUT_DIR}")
