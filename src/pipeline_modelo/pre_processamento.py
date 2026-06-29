@@ -45,31 +45,6 @@ def isolar_variaveis(df):
     return df
 
 
-def tratar_nulos(df):
-    """
-        Trata valores faltantes remanescentes.
-    """
-
-    print("-" * 50)
-    print("Tratando valores nulos...")
-    print("-" * 50)
-
-    # Preenche numéricos com a mediana para mitigar outliers.
-    if 'valor_estimado' in df.columns:
-        mediana_valor = df['valor_estimado'].median()
-        df['valor_estimado'] = df['valor_estimado'].fillna(mediana_valor)
-
-    # Preenche categóricos com "NAO_INFORMADO".
-    colunas_categoricas = ['unidade_gestora', 'modalidade']
-    for col in colunas_categoricas:
-        if col in df.columns:
-            df[col] = df[col].fillna('NAO_INFORMADO')
-
-    print("[OK] Valores nulos tratados com sucesso!")
-    
-    return df
-
-
 def codificar_categoricas(df):
     """
         Aplica Label Encoding para categóricas.
@@ -97,26 +72,6 @@ def codificar_categoricas(df):
     return df
 
 
-def normalizar_numericas(df):
-    """
-        Aplica normalização para numéricas.
-    """
-
-    print("-" * 50)
-    print("Realizando Normalização...")
-    print("-" * 50)
-
-    df = df.copy()
-    scaler = StandardScaler()
-
-    if 'valor_estimado' in df.columns:
-        df[['valor_estimado']] = scaler.fit_transform(df[['valor_estimado']])
-
-    print("[OK] Variáveis numéricas normalizadas com sucesso!")
-
-    return df
-
-
 def dividir_bases(df, target_col='risco'):
     """
         Divide a base mantendo a proporção da variável alvo.
@@ -126,6 +81,63 @@ def dividir_bases(df, target_col='risco'):
     y = df[target_col]
 
     return train_test_split(X, y, test_size=0.20, random_state=42, stratify=y)
+
+
+def tratar_nulos(X_train, X_test):
+    """
+        Trata valores faltantes remanescentes.
+    """
+
+    print("-" * 50)
+    print("Tratando valores nulos...")
+    print("-" * 50)
+
+    # Calcula a mediana apenas no conjunto de treinamento para evitar
+    # data leakage e a utiliza para imputar valores faltantes em ambos os conjuntos.
+    if 'valor_estimado' in X_train.columns:
+        mediana_valor = X_train['valor_estimado'].median()
+        X_train['valor_estimado'] = X_train['valor_estimado'].fillna(mediana_valor)
+        X_test['valor_estimado'] = X_test['valor_estimado'].fillna(mediana_valor)
+
+    # Preenche atributos categóricos ausentes com uma categoria explícita,
+    # preservando a consistência entre treino e teste.
+    colunas_categoricas = ['unidade_gestora', 'modalidade']
+    for col in colunas_categoricas:
+        if col in X_train.columns:
+            X_train[col] = X_train[col].fillna("NAO_INFORMADO")
+            X_test[col] = X_test[col].fillna("NAO_INFORMADO")
+
+    print("[OK] Valores nulos tratados com sucesso!")
+    
+    return X_train, X_test
+
+
+def normalizar_numericas(X_train, X_test):
+    """
+        Aplica normalização para numéricas.
+    """
+
+    print("-" * 50)
+    print("Realizando Normalização...")
+    print("-" * 50)
+
+    scaler = StandardScaler()
+
+    # Ajusta o StandardScaler apenas sobre o conjunto de treinamento e
+    # aplica os mesmos parâmetros ao conjunto de teste.
+    scaler.fit(X_train[['valor_estimado']])
+
+    X_train[['valor_estimado']] = scaler.transform(
+        X_train[['valor_estimado']]
+    )
+
+    X_test[['valor_estimado']] = scaler.transform(
+        X_test[['valor_estimado']]
+    )
+
+    print("[OK] Variáveis numéricas normalizadas com sucesso!")
+
+    return X_train, X_test
 
 
 def vetorizar_texto(X_train, X_test, coluna='objeto', max_features=50):
@@ -222,19 +234,21 @@ def executar_pipeline(caminho_base_tratada):
     # 1. Carregamento da base tratada.
     df = pd.read_excel(caminho_base_tratada)
 
-    # 2. Execução de transformações.
+    # 2. Execução de transformações em toda a base.
     df = isolar_variaveis(df)
-    df = tratar_nulos(df)
     df = codificar_categoricas(df)
-    df = normalizar_numericas(df)
 
     # 3. Divide as bases.
     X_train, X_test, y_train, y_test = dividir_bases(df)
 
-    # 4. Vetoriza o texto da coluna 'objeto' com a base já dividida.
+    # 4. Execução de transformações somente nas variáveis independentes.
+    X_train, X_test = tratar_nulos(X_train, X_test)
+    X_train, X_test = normalizar_numericas(X_train, X_test)
+    
+    # 5. Vetoriza o texto da coluna 'objeto' com a base já dividida.
     X_train, X_test = vetorizar_texto(X_train, X_test, max_features=50)
 
-    # 5. Aplica o SMOTE
+    # 6. Aplica o SMOTE
     X_train_smote, y_train_smote = aplicar_smote(X_train, y_train)
 
     return X_train_smote, X_test, y_train_smote, y_test
