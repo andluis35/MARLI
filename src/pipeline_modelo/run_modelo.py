@@ -19,9 +19,11 @@ def main():
 
     # 1. Separa os dados em conjuntos de TREINO e TESTE, realizando:
     # - Isolamento de variáveis preditivas e de rotulagem;
+    # - Codificação via Label Encoding;
     # - Tratamento de valores nulos;
-    # - Normalização;
-    # - SMOTE no conjunto de TREINO.
+    # - Normalização via Standart Scaling;
+    # - Vetorização do 'objeto' via TF-IDF;
+    # - SMOTE.
     X_train, X_test, y_train, y_test = executar_pipeline(CAMINHO_BASE_TRATADA)
 
     print("-" * 50)
