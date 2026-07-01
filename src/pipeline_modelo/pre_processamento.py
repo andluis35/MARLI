@@ -77,8 +77,14 @@ def dividir_bases(df, target_col='risco'):
         Divide a base mantendo a proporção da variável alvo.
     """
 
+    print("-" * 50)
+    print("Dividindo base em 'Training Set' e 'Test Set'...")
+    print("-" * 50)
+
     X = df.drop(columns=[target_col])
     y = df[target_col]
+
+    print(f"[OK] Base dividida com sucesso!")
 
     return train_test_split(X, y, test_size=0.20, random_state=42, stratify=y)
 
