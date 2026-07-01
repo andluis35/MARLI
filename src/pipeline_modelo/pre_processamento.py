@@ -257,4 +257,8 @@ def executar_pipeline(caminho_base_tratada):
     # 6. Aplica o SMOTE
     X_train_smote, y_train_smote = aplicar_smote(X_train, y_train)
 
+    print("-" * 50)
+    print("[SUCESSO] Dados prontos!")
+    print("-" * 50)
+
     return X_train_smote, X_test, y_train_smote, y_test
