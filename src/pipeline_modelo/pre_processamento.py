@@ -237,6 +237,9 @@ def executar_pipeline(caminho_base_tratada):
         Orquestra toda a etapa de pré-processamento.
     """
 
+    print("\n" * 50)
+    print("== INICIANDO PIPELINE DE MODELAGEM DA MARLI ==\n")
+
     # 1. Carregamento da base tratada.
     df = pd.read_excel(caminho_base_tratada)
 

@@ -13,10 +13,6 @@ def main():
         Realiza o pré-processamento completo dos dados.
     """
 
-    print("\n" * 50)
-    print("== INICIANDO PIPELINE DE MODELAGEM DA MARLI ==\n")
-
-
     # 1. Separa os dados em conjuntos de TREINO e TESTE, realizando:
     # - Isolamento de variáveis preditivas e de rotulagem;
     # - Codificação via Label Encoding;
