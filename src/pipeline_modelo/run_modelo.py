@@ -1,3 +1,4 @@
+from avaliacao_modelos import avaliar_modelos
 from pathlib import Path
 from pre_processamento import executar_pipeline
 from treinamento_modelos import treinar_modelos
@@ -23,11 +24,17 @@ def main():
     X_train_smote, X_test, y_train_smote, y_test = executar_pipeline(CAMINHO_BASE_TRATADA)
 
     # 2. Treina os modelos de acordo com os seguintes algoritmos de classificação:
-    # - Logistic Regression
-    # - Random Forest
-    # - Gradient Boosting
-    # - XGBoost
+    # - Logistic Regression;
+    # - Random Forest;
+    # - Gradient Boosting;
+    # - XGBoost.
     modelos_prontos = treinar_modelos(X_train_smote, y_train_smote)
+
+    # 3. Avalia os modelos e gera os gráficos.
+    resumo_metricas = avaliar_modelos(modelos_prontos, X_test, y_test)
+
+    print("[SUCESSO] Pipeline finalizado!")
+
 
 if __name__ == "__main__":
     main()
