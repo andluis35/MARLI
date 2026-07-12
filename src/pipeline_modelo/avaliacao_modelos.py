@@ -104,7 +104,7 @@ def avaliar_modelos(modelos_treinados, X_test, y_test):
 
     print("== RESUMO DO DESEMPENHO ==")
     df_resumo = pd.DataFrame(resultados).T
-    colunas_ordenadas = ['Acurácia', 'Precisão', 'Recall', 'F1-Score', 'ROC-AUC']
+    colunas_ordenadas = ['Accuracy', 'Precision', 'Recall', 'F1-Score', 'ROC-AUC']
 
     # Previne a quebra do código caso o modelo atual não tenha gerado ROC-AUC.
     colunas_finais = [col for col in colunas_ordenadas if col in df_resumo.columns]
