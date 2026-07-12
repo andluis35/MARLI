@@ -1,7 +1,7 @@
-# MARLI
+# 🔎 MARLI
 ### Modelo de Análise de Risco em Licitações via Machine Learning
 
-**MARLI** (Modelo de Análise de Risco em Licitações) é uma ferramenta desenvolvida como Trabalho de Conclusão de Curso em Ciência da Computação na Universidade do Estado do Rio de Janeiro (UERJ).
+* **MARLI** (Modelo de Análise de Risco em Licitações) é uma ferramenta desenvolvida como Trabalho de Conclusão de Curso em Ciência da Computação na Universidade do Estado do Rio de Janeiro (UERJ).
 
 * O projeto utiliza técnicas de **Aprendizado de Máquina**, **Processamento de Linguagem Natural (NLP)** e **Análise Exploratória de Dados** para classificar processos licitatórios municipais em três níveis de risco (**Baixo**, **Médio** e **Alto**), fornecendo uma ferramenta de apoio à priorização de auditorias realizadas pelos Tribunais de Contas.
 
@@ -9,7 +9,7 @@
 
 ---
 
-# Objetivo
+# 🎯 Objetivo
 
 O projeto busca responder à seguinte questão:
 
@@ -27,7 +27,7 @@ Para isso foi desenvolvida uma pipeline completa envolvendo:
 
 ---
 
-# Tecnologias Utilizadas
+# 🔧 Tecnologias Utilizadas
 
 ## Linguagem
 
@@ -51,7 +51,7 @@ Para isso foi desenvolvida uma pipeline completa envolvendo:
 
 ---
 
-# Estrutura do Projeto
+# 📂 Estrutura do Projeto
 
 ```text
 MARLI/
@@ -59,21 +59,34 @@ MARLI/
 ├── data/
 │   ├── raw/                 # Bases extraídas do Portal BI
 │   └── processed/           # Dataset final utilizado pelo modelo
+│ 
+├── docs/
+│   └── plots/               # Figuras geradas na execução
 │
 ├── notebooks/
 │   └── 01_analise_exploratoria.ipynb
 │
-├── docs/
-│   └── plots/               # Figuras geradas na execução
+├── src/
+│   ├── pipeline_etl/                # Pipeline de extração, transformação e preparação dos dados
+│   │   ├── etl_dados_abertos.py     # Integração das bases de licitações e vencedores
+│   │   ├── calculo_heuristicas.py   # Cálculo das variáveis heurísticas de risco
+│   │   ├── calculo_score.py         # Construção da variável alvo (Score MARLI)
+│   │   └── run_etl.py               # Execução completa da pipeline ETL
+│   │
+│   └── pipeline_modelo/             # Pipeline de Machine Learning
+│       ├── pre_processamento.py     # Preparação dos dados para treinamento
+│       ├── treinamento_modelos.py   # Treinamento dos algoritmos supervisionados
+│       ├── avaliacao_modelos.py     # Geração das métricas e gráficos de avaliação
+│       └── run_modelo.py            # Execução completa da etapa de modelagem
 │
-├── requirements.txt
+├── .gitignore
 ├── README.md
-└── .gitignore
+└── requirements.txt
 ```
 
 ---
 
-# Pipeline do Projeto
+# ⚙️ Pipeline do Projeto
 
 A arquitetura da solução é composta pelas seguintes etapas:
 
@@ -91,7 +104,7 @@ A arquitetura da solução é composta pelas seguintes etapas:
 
 ---
 
-# Modelos Avaliados
+# 📋 Modelos Avaliados
 
 Foram comparados quatro algoritmos supervisionados:
 
@@ -121,7 +134,7 @@ O modelo com melhor desempenho foi o **Random Forest**, apresentando aproximadam
 
 ---
 
-# Variáveis Utilizadas
+# 🧩 Variáveis Utilizadas
 
 Entre as principais variáveis empregadas pelo modelo destacam-se:
 
@@ -135,7 +148,7 @@ Entre as principais variáveis empregadas pelo modelo destacam-se:
 
 ---
 
-# Funcionalidades
+# 🛠️ Funcionalidades
 
 O projeto contempla:
 
@@ -151,7 +164,7 @@ O projeto contempla:
 
 ---
 
-# Como Executar
+# ▶️ Como Executar
 
 ## 1. Clonar o repositório
 
@@ -199,7 +212,7 @@ python src/pipeline_modelo/run_modelo.py
 
 ---
 
-# Trabalhos Futuros
+# 🌟 Trabalhos Futuros
 
 - Integração com a API pública do TCE-RJ;
 - Inclusão das licitações estaduais para ampliar a base de treinamento;
@@ -208,7 +221,7 @@ python src/pipeline_modelo/run_modelo.py
 
 ---
 
-# Autor
+# 👨‍💻 Autor
 
 **Anderson Luis**
 
@@ -218,6 +231,6 @@ Universidade do Estado do Rio de Janeiro (UERJ)
 
 ---
 
-# Licença
+# ⚖️ Licença
 
 Este projeto foi desenvolvido exclusivamente para fins acadêmicos como Trabalho de Conclusão de Curso.
